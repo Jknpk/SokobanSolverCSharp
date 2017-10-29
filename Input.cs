@@ -43,7 +43,10 @@ namespace SokobanSolver
             int height = int.Parse(numbers.Split(' ').ToArray()[1]);
             int amountOfDiamonds = int.Parse(numbers.Split(' ').ToArray()[2]);
 
-            Map map = new Map(width, height, amountOfDiamonds, mapInput);
+            int amountOfGoals = 0;
+            // Get amount of Goals
+            foreach(string s in mapInput) { foreach (char c in s) { if(c=='G')amountOfGoals++; } }
+            Map map = new Map(width, height, amountOfDiamonds, amountOfGoals, mapInput);
             
             return map;
         }

@@ -9,56 +9,41 @@ namespace SokobanSolver
     class Robot
     {
         private Map map;
-        private PointOnMap position;
+        private PointOnMap currentPosition;
         private PointOnMap[] diamondPositions;
+        private List<Route> usefulRoutes;
 
-        public Robot(Map currentMap, PointOnMap currentPosition, PointOnMap[] currentDiamondPositions)
+        public Robot(Map currentMap)
         {
             map = currentMap;
-            position = currentPosition;
-            position.order = 1;
-            diamondPositions = currentDiamondPositions;
-            List<Route> usefulRoutes = calculateUsefulRoutes(calculateShiftPoints(), calculatePossibleRobotPositions());
+            currentPosition = map.robotPosition;
+            diamondPositions = map.diamonds;
+            currentPosition.order = 1;
+            
+            usefulRoutes = calculateUsefulRoutes(calculateShiftPoints(), calculatePossibleRobotPositions());
            // foreach (Route r in usefulRoutes)
             ///{
              //   Console.Write(r.ToString() + "----------\n\n");
             //}
             //List<Tuple<PointOnMap, PointOnMap>> possibleShiftPoints
-
-            Route routeToBeExecuted = usefulRoutes.First();
-            Console.Write(routeToBeExecuted.ToString());
-            int newRobotPositionX = routeToBeExecuted.GetLast().Row;
-            int newRobotPositionY = routeToBeExecuted.GetLast().Column;
-            currentMap.map[newRobotPositionX, newRobotPositionY] = (int)FieldType.Robot;
-
-            map.map[newRobotPositionX, newRobotPositionY] = (int)FieldType.Robot;
-            PointOnMap newRobotPosition = new PointOnMap(newRobotPositionX, newRobotPositionY, (FieldType)map.map[newRobotPositionX, newRobotPositionY]);
-            // update Diamond position
-            switch (PointOnMap.DirectionOfNeighbor(map, currentPosition, newRobotPosition))
-            {
-                case Direction.North:
-                    map.map[map.GetElementNorth(newRobotPosition).Row, map.GetElementNorth(newRobotPosition).Column] = (int)FieldType.Diamond;
-                    break;
-                case Direction.East:
-                    map.map[map.GetElementEast(newRobotPosition).Row, map.GetElementEast(newRobotPosition).Column] = (int)FieldType.Diamond;
-                    break;
-                case Direction.South:
-                    map.map[map.GetElementSouth(newRobotPosition).Row, map.GetElementSouth(newRobotPosition).Column] = (int)FieldType.Diamond;
-                    break;
-                case Direction.West:
-                    map.map[map.GetElementWest(newRobotPosition).Row, map.GetElementWest(newRobotPosition).Column] = (int)FieldType.Diamond;
-                    break;
-                default:
-                    Console.WriteLine("nicht gut!");
-                    break;
-            }
-
-            map.map[currentPosition.Row, currentPosition.Column] = (int)FieldType.Walkable; // Problem: Reveiling a Goal Field!
-            currentPosition = newRobotPosition;
-
-            Console.WriteLine("Jetzt gehts rund!\n" + map.ToString());
         }
 
+
+        public List<Route> GetRoutes()
+        {
+            return usefulRoutes;
+            //Route routeToBeExecuted = null;
+            //try
+            //{
+            //    routeToBeExecuted = usefulRoutes.ElementAt(i);
+            //}
+            //catch(Exception e)
+            //{
+            //    return null;
+            //}
+            //// Console.Write(routeToBeExecuted.ToString());
+            //return routeToBeExecuted;
+        }
 
         private void breadthFirstSearch()
         {
@@ -71,7 +56,8 @@ namespace SokobanSolver
         public List<Route> calculateUsefulRoutes(List<Tuple<PointOnMap, PointOnMap>> possibleShiftPoints, int[,] movementMap)
         {
             List<Route> allUsefulRoutes = new List<Route>();
-            //Console.WriteLine("Possible shift Positions!");
+            // List of Tuples where the first Element specifies the
+            // robot position and the second Element represents the diamond that can be moved 
             foreach (Tuple<PointOnMap, PointOnMap> shiftPoint in possibleShiftPoints)
             {
 
@@ -88,6 +74,12 @@ namespace SokobanSolver
 
                     int toRobotCounter = movementMap[shiftPoint.Item1.Row, shiftPoint.Item1.Column];
                     PointOnMap current = shiftPoint.Item1;
+
+                    if(toRobotCounter == 1)
+                    {
+                        Console.WriteLine("YAY");
+                        Console.Read();
+                    }
 
                     while(toRobotCounter != 1)
                     {
@@ -137,7 +129,7 @@ namespace SokobanSolver
             Array.Clear(movementMap, 0, movementMap.Length);
 
             List<PointOnMap> stillToInspect = new List<PointOnMap>();
-            stillToInspect.Add(position);
+            stillToInspect.Add(currentPosition);
 
             while (stillToInspect.Count > 0)
             {
@@ -168,21 +160,24 @@ namespace SokobanSolver
                     PointOnMap pWest = map.GetElementWest(currentlyInspectedPosition);
                     pWest.order = currentlyInspectedPosition.order + 1;
                     stillToInspect.Add(pWest);
-
-                }
-                
+                }   
             }
+            printMovementMap(movementMap);
+            return movementMap;
+        }
 
+
+        private void printMovementMap(int[,] movementMap)
+        {
             // Prints the map with distances to each reachable point
-            for(int i = 0; i < movementMap.GetLength(0); i++)
+            for (int i = 0; i < movementMap.GetLength(0); i++)
             {
-                for(int j = 0; j < movementMap.GetLength(1); j++)
+                for (int j = 0; j < movementMap.GetLength(1); j++)
                 {
-                        Console.Write(movementMap[i, j] + "\t");
+                    Console.Write(movementMap[i, j] + "\t");
                 }
                 Console.WriteLine();
             }
-            return movementMap;
         }
 
 
@@ -222,9 +217,5 @@ namespace SokobanSolver
             }
             return shiftPoints;
         }
-
-
-
-
     }
 }

@@ -41,5 +41,9 @@ namespace SokobanSolver
         {
             return route.Last();
         }
+        public PointOnMap GetSecondLast()
+        {
+            return route.ElementAt(route.Count-2);
+        }
     }
 }

@@ -13,21 +13,22 @@ namespace SokobanSolver
 
 
         public int[,] map;
-        PointOnMap[] diamonds;
-        PointOnMap robotPosition;
+        public PointOnMap[] diamonds;
+        public PointOnMap[] goals;
+        public PointOnMap robotPosition;
 
 
 
         /// <summary>
         /// Constructor of Map 
         /// </summary>
-        public Map(int mapWidth, int mapHeight, int inputDiamonds, String[] mapString)
+        public Map(int mapWidth, int mapHeight, int inputDiamonds, int inputGoals, String[] mapString)
         {
             map = new int[mapHeight, mapWidth]; // mapHeight = rows     mapWidth = cols
             diamonds = new PointOnMap[inputDiamonds];
-
-
-            int x = 0, y = 0, diamondCounter = 0;
+            goals = new PointOnMap[inputGoals];
+            
+            int x = 0, y = 0, diamondCounter = 0, goalCounter = 0;
             foreach (string row in mapString){
                 foreach(char field in row)
                 {
@@ -47,6 +48,8 @@ namespace SokobanSolver
                             break;
                         case 'G':
                             map[x, y] = (int)FieldType.Goal;
+                            goals[goalCounter] = new PointOnMap(x, y, FieldType.Goal);
+                            goalCounter++;
                             break;
                         case 'X':
                             map[x, y] = (int)FieldType.Unwalkable;
@@ -65,44 +68,101 @@ namespace SokobanSolver
                 y = 0;
                 x++;
             }
-
-
-            
         }
 
-        public void startGame()
-        {
-            //Breitensuche!
 
-            Robot r = new Robot(this, robotPosition, diamonds);
+        public Map(int[,] inputMap, PointOnMap[] goals, PointOnMap[] diamonds, PointOnMap robotPosition)
+        {
+            map = inputMap;
+            this.goals = goals;
+            this.diamonds = diamonds;
+            this.robotPosition = robotPosition;
+        }
+
+        public Map executeRoute(Route routeToBeExecuted)
+        {
+            int[,] result = new int[map.GetLength(0),map.GetLength(1)];
+            Array.Copy(map, result, map.Length);
+
+            PointOnMap[] newDiamonds = new PointOnMap[diamonds.Length];
+            int i = 0;
+            foreach(PointOnMap diamond in diamonds)
+            {
+                newDiamonds[i] = new PointOnMap(diamond.Row, diamond.Column, (FieldType) map[diamond.Row, diamond.Column]);
+                i++;
+            }
+
+            Map newMap = new Map(result, this.goals, newDiamonds, robotPosition);
+
+
+            int shiftPostionX = routeToBeExecuted.GetSecondLast().Row;
+            int shiftPostionY = routeToBeExecuted.GetSecondLast().Column;
+
+            int newRobotPositionX = routeToBeExecuted.GetLast().Row;
+            int newRobotPositionY = routeToBeExecuted.GetLast().Column;
+
+            newMap.map[newRobotPositionX, newRobotPositionY] = (int)FieldType.Robot;
+
+
+            PointOnMap newRobotPosition = new PointOnMap(newRobotPositionX, newRobotPositionY, (FieldType)newMap.map[newRobotPositionX, newRobotPositionY]);
+            PointOnMap shiftPosition = new PointOnMap(shiftPostionX, shiftPostionY, (FieldType)newMap.map[shiftPostionX, shiftPostionY]);
+            // update Diamond position
+            switch (PointOnMap.DirectionOfNeighbor(newMap, shiftPosition, newRobotPosition))
+            {
+                case Direction.North:
+                    newMap.map[GetElementNorth(newRobotPosition).Row, GetElementNorth(newRobotPosition).Column] = (int)FieldType.Diamond;
+                    break;
+                case Direction.East:
+                    newMap.map[GetElementEast(newRobotPosition).Row, GetElementEast(newRobotPosition).Column] = (int)FieldType.Diamond;
+                    break;
+                case Direction.South:
+                    newMap.map[GetElementSouth(newRobotPosition).Row, GetElementSouth(newRobotPosition).Column] = (int)FieldType.Diamond;
+                    break;
+                case Direction.West:
+                    newMap.map[GetElementWest(newRobotPosition).Row, GetElementWest(newRobotPosition).Column] = (int)FieldType.Diamond;
+                    break;
+                default:
+                    Console.WriteLine("nicht gut!");
+                    break;
+            }
+
+            newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Walkable;
+            // Problem solved for: Reveiling a Goal Field
+            foreach (PointOnMap goal in goals)
+            {
+                if(robotPosition == goal)
+                {
+                    newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Goal;
+                }
+            }
+
+            newMap.robotPosition = newRobotPosition;
             
-            // Each turn:
-            // Robot on the new Position: Print Chosen Route
-            // Diamond on the new Position
-            // Check if Game is won
+            return newMap;
         }
 
         public override string ToString()
         {
+            string returnString = "";
             for(int i = 0; i < map.GetLength(0); i++){
                 for(int j = 0; j < map.GetLength(1); j++)
                 {
                     switch (map[i,j])
                     {
                         case (int) FieldType.Walkable:
-                            Console.Write(".");
+                            returnString+=".";
                             break;
                         case (int)FieldType.Diamond:
-                            Console.Write("D");
+                            returnString += "D";
                             break;
                         case (int)FieldType.Robot:
-                            Console.Write("R");
+                            returnString += "R";
                             break;
                         case (int)FieldType.Goal:
-                            Console.Write("G");
+                            returnString += "G";
                             break;
                         case (int)FieldType.Unwalkable:
-                            Console.Write("-");
+                            returnString += "-";
                             break;
                         default:
                             Console.Error.WriteLine("Something went wrong");
@@ -110,9 +170,9 @@ namespace SokobanSolver
                             break;
                     }
                 }
-                Console.WriteLine();
+                returnString += "\n";
             }
-            return base.ToString();
+            return returnString;
         }
 
 
@@ -132,6 +192,5 @@ namespace SokobanSolver
         {
             return new PointOnMap(current.Row, current.Column - 1, (FieldType)map[current.Row, current.Column - 1]);
         }
-
     }
 }
