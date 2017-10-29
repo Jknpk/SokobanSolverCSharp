@@ -74,13 +74,7 @@ namespace SokobanSolver
 
                     int toRobotCounter = movementMap[shiftPoint.Item1.Row, shiftPoint.Item1.Column];
                     PointOnMap current = shiftPoint.Item1;
-
-                    if(toRobotCounter == 1)
-                    {
-                        Console.WriteLine("YAY");
-                        Console.Read();
-                    }
-
+                    
                     while(toRobotCounter != 1)
                     {
                         toRobotCounter -= 1;
@@ -191,29 +185,37 @@ namespace SokobanSolver
         public List<Tuple<PointOnMap,PointOnMap>> calculateShiftPoints()
         {
             List<Tuple<PointOnMap, PointOnMap>> shiftPoints = new List<Tuple<PointOnMap, PointOnMap>>();
-            
+
             // Search for moveable diamonds
             // A diamond is moveable when two opposite fields around the diamond are walkable or Goal-fields
-            foreach(PointOnMap diamond in diamondPositions)
+            Console.WriteLine("Yo");
+            foreach (PointOnMap diamond in diamondPositions)
             {
+                Console.WriteLine("diamond: " + diamond.ToString());
                 // North-South Direction
-                if((map.GetElementNorth(diamond).FieldType == FieldType.Walkable || map.GetElementNorth(diamond).FieldType == FieldType.Goal)
+                if ((map.GetElementNorth(diamond).FieldType == FieldType.Walkable || map.GetElementNorth(diamond).FieldType == FieldType.Goal || map.GetElementNorth(diamond).FieldType == FieldType.Robot)
                     &&
-                    (map.GetElementSouth(diamond).FieldType == FieldType.Walkable || map.GetElementSouth(diamond).FieldType == FieldType.Goal)
+                    (map.GetElementSouth(diamond).FieldType == FieldType.Walkable || map.GetElementSouth(diamond).FieldType == FieldType.Goal || map.GetElementSouth(diamond).FieldType == FieldType.Robot)
                     )
                 {
                     shiftPoints.Add( new Tuple<PointOnMap, PointOnMap>( map.GetElementNorth(diamond), diamond));
                     shiftPoints.Add( new Tuple<PointOnMap, PointOnMap>( map.GetElementSouth(diamond), diamond));
                 }
                 // East-West Direction
-                if ((map.GetElementEast(diamond).FieldType == FieldType.Walkable || map.GetElementEast(diamond).FieldType == FieldType.Goal)
+                if ((map.GetElementEast(diamond).FieldType == FieldType.Walkable || map.GetElementEast(diamond).FieldType == FieldType.Goal || map.GetElementEast(diamond).FieldType == FieldType.Robot)
                     &&
-                    (map.GetElementWest(diamond).FieldType == FieldType.Walkable || map.GetElementWest(diamond).FieldType == FieldType.Goal)
+                    (map.GetElementWest(diamond).FieldType == FieldType.Walkable || map.GetElementWest(diamond).FieldType == FieldType.Goal || map.GetElementWest(diamond).FieldType == FieldType.Robot)
                     )
                 {
                     shiftPoints.Add(new Tuple<PointOnMap, PointOnMap>(map.GetElementEast(diamond), diamond));
                     shiftPoints.Add(new Tuple<PointOnMap, PointOnMap>(map.GetElementWest(diamond), diamond));
                 }
+            }
+            
+            
+            foreach ( Tuple<PointOnMap, PointOnMap> a in shiftPoints)
+            {
+                Console.WriteLine(a.Item1.ToString());
             }
             return shiftPoints;
         }

@@ -21,6 +21,20 @@ namespace SokobanSolver
             route.Add(nextStep);
         }
 
+        public Route Append(Route r)
+        {
+            Route returnRoute = new Route();
+            foreach(PointOnMap a in route)
+            {
+                returnRoute.Append(a);
+            }
+            foreach(PointOnMap b in r.route)
+            {
+                returnRoute.Append(b);
+            }
+            return returnRoute;
+        }
+
         public override string ToString()
         {
             string returnString = "Route:\n";

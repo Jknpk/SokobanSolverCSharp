@@ -17,7 +17,7 @@ namespace SokobanSolver
         public PointOnMap[] goals;
         public PointOnMap robotPosition;
 
-
+        public Route wholeRoute; 
 
         /// <summary>
         /// Constructor of Map 
@@ -27,6 +27,7 @@ namespace SokobanSolver
             map = new int[mapHeight, mapWidth]; // mapHeight = rows     mapWidth = cols
             diamonds = new PointOnMap[inputDiamonds];
             goals = new PointOnMap[inputGoals];
+            wholeRoute = new Route();
             
             int x = 0, y = 0, diamondCounter = 0, goalCounter = 0;
             foreach (string row in mapString){
@@ -71,12 +72,13 @@ namespace SokobanSolver
         }
 
 
-        public Map(int[,] inputMap, PointOnMap[] goals, PointOnMap[] diamonds, PointOnMap robotPosition)
+        public Map(int[,] inputMap, PointOnMap[] goals, PointOnMap[] diamonds, PointOnMap robotPosition, Route wholeRoute)
         {
             map = inputMap;
             this.goals = goals;
             this.diamonds = diamonds;
             this.robotPosition = robotPosition;
+            this.wholeRoute = wholeRoute;
         }
 
         public Map executeRoute(Route routeToBeExecuted)
@@ -85,6 +87,7 @@ namespace SokobanSolver
             Array.Copy(map, result, map.Length);
 
             PointOnMap[] newDiamonds = new PointOnMap[diamonds.Length];
+            if (diamonds.Length < goals.Length) { throw new Exception("What the fuck!"); } 
             int i = 0;
             foreach(PointOnMap diamond in diamonds)
             {
@@ -92,21 +95,24 @@ namespace SokobanSolver
                 i++;
             }
 
-            Map newMap = new Map(result, this.goals, newDiamonds, robotPosition);
+            Map newMap = new Map(result, this.goals, newDiamonds, robotPosition, wholeRoute.Append(routeToBeExecuted));
 
-
+            // Set new shift Position where the robot has to go in order to push the diamond
             int shiftPostionX = routeToBeExecuted.GetSecondLast().Row;
             int shiftPostionY = routeToBeExecuted.GetSecondLast().Column;
+            PointOnMap shiftPosition = new PointOnMap(shiftPostionX, shiftPostionY, (FieldType)newMap.map[shiftPostionX, shiftPostionY]);
 
+            // Set new robot Position where the robot will be after pushing forward the diamond
             int newRobotPositionX = routeToBeExecuted.GetLast().Row;
             int newRobotPositionY = routeToBeExecuted.GetLast().Column;
 
+            // The robot is placed on position of diamond
             newMap.map[newRobotPositionX, newRobotPositionY] = (int)FieldType.Robot;
-
-
             PointOnMap newRobotPosition = new PointOnMap(newRobotPositionX, newRobotPositionY, (FieldType)newMap.map[newRobotPositionX, newRobotPositionY]);
-            PointOnMap shiftPosition = new PointOnMap(shiftPostionX, shiftPostionY, (FieldType)newMap.map[shiftPostionX, shiftPostionY]);
-            // update Diamond position
+
+
+            
+            // Diamond position has to be updated
             switch (PointOnMap.DirectionOfNeighbor(newMap, shiftPosition, newRobotPosition))
             {
                 case Direction.North:
@@ -123,11 +129,13 @@ namespace SokobanSolver
                     break;
                 default:
                     Console.WriteLine("nicht gut!");
+                    throw new Exception("Lost a diamond!");
                     break;
             }
 
+            // Set old position of robot to walkable 
             newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Walkable;
-            // Problem solved for: Reveiling a Goal Field
+            // if old robot-position was goal, set to goal instead of walkable
             foreach (PointOnMap goal in goals)
             {
                 if(robotPosition == goal)
@@ -137,8 +145,39 @@ namespace SokobanSolver
             }
 
             newMap.robotPosition = newRobotPosition;
-            
+            newMap.searchDiamonds(); // Update Diamondpositions!
             return newMap;
+        }
+
+        public bool isWon()
+        {
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if ((FieldType)map[i, j] == FieldType.Goal) return false;
+                }
+            }
+                    return true;
+        }
+
+        private void searchDiamonds()
+        {
+            Console.WriteLine("Diamonds: ");
+            int diamondCounter = 0;
+            for(int i = 0; i < map.GetLength(0); i++)
+            {
+                for(int j = 0; j < map.GetLength(1); j++)
+                {
+                    if((FieldType)map[i,j] == FieldType.Diamond)
+                    {
+                        diamonds[diamondCounter] = new PointOnMap(i,j,(FieldType) map[i,j]);
+                        Console.WriteLine(diamonds[diamondCounter].ToString() + " ");
+                        diamondCounter++;
+                        
+                    }
+                }
+            }
         }
 
         public override string ToString()
