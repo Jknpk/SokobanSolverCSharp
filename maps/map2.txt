@@ -1,0 +1,10 @@
+10 09 01
+     XXXXX
+XXXXXX...X
+X........X
+X.XXXXXXXX
+XX....J.GX
+ X..XXXXXX
+ X.MXXXXXX
+ X..X     
+ XXXX     
