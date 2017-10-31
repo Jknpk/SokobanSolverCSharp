@@ -156,7 +156,7 @@ namespace SokobanSolver
                     stillToInspect.Add(pWest);
                 }   
             }
-            printMovementMap(movementMap);
+            //printMovementMap(movementMap);
             return movementMap;
         }
 
@@ -188,10 +188,10 @@ namespace SokobanSolver
 
             // Search for moveable diamonds
             // A diamond is moveable when two opposite fields around the diamond are walkable or Goal-fields
-            Console.WriteLine("Yo");
+            //Console.WriteLine("Yo");
             foreach (PointOnMap diamond in diamondPositions)
             {
-                Console.WriteLine("diamond: " + diamond.ToString());
+                // Console.WriteLine("diamond: " + diamond.ToString());
                 // North-South Direction
                 if ((map.GetElementNorth(diamond).FieldType == FieldType.Walkable || map.GetElementNorth(diamond).FieldType == FieldType.Goal || map.GetElementNorth(diamond).FieldType == FieldType.Robot)
                     &&
@@ -213,10 +213,10 @@ namespace SokobanSolver
             }
             
             
-            foreach ( Tuple<PointOnMap, PointOnMap> a in shiftPoints)
-            {
-                Console.WriteLine(a.Item1.ToString());
-            }
+            //foreach ( Tuple<PointOnMap, PointOnMap> a in shiftPoints)
+            //{
+                //Console.WriteLine(a.Item1.ToString());
+            //}
             return shiftPoints;
         }
     }

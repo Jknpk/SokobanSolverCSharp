@@ -8,7 +8,7 @@ namespace SokobanSolver
 {
     public enum FieldType { Walkable, Diamond, Robot, Goal, Unwalkable };
 
-    class Map
+    class Map : IEquatable<Map>
     {
 
 
@@ -110,8 +110,17 @@ namespace SokobanSolver
             newMap.map[newRobotPositionX, newRobotPositionY] = (int)FieldType.Robot;
             PointOnMap newRobotPosition = new PointOnMap(newRobotPositionX, newRobotPositionY, (FieldType)newMap.map[newRobotPositionX, newRobotPositionY]);
 
+            // Set old position of robot to walkable 
+            newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Walkable;
+            // if old robot-position was goal, set to goal instead of walkable
+            foreach (PointOnMap goal in goals)
+            {
+                if (robotPosition == goal)
+                {
+                    newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Goal;
+                }
+            }
 
-            
             // Diamond position has to be updated
             switch (PointOnMap.DirectionOfNeighbor(newMap, shiftPosition, newRobotPosition))
             {
@@ -133,16 +142,7 @@ namespace SokobanSolver
                     break;
             }
 
-            // Set old position of robot to walkable 
-            newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Walkable;
-            // if old robot-position was goal, set to goal instead of walkable
-            foreach (PointOnMap goal in goals)
-            {
-                if(robotPosition == goal)
-                {
-                    newMap.map[robotPosition.Row, robotPosition.Column] = (int)FieldType.Goal;
-                }
-            }
+
 
             newMap.robotPosition = newRobotPosition;
             newMap.searchDiamonds(); // Update Diamondpositions!
@@ -163,7 +163,7 @@ namespace SokobanSolver
 
         private void searchDiamonds()
         {
-            Console.WriteLine("Diamonds: ");
+            //Console.WriteLine("Diamonds: ");
             int diamondCounter = 0;
             for(int i = 0; i < map.GetLength(0); i++)
             {
@@ -172,11 +172,15 @@ namespace SokobanSolver
                     if((FieldType)map[i,j] == FieldType.Diamond)
                     {
                         diamonds[diamondCounter] = new PointOnMap(i,j,(FieldType) map[i,j]);
-                        Console.WriteLine(diamonds[diamondCounter].ToString() + " ");
+                        //Console.WriteLine(diamonds[diamondCounter].ToString() + " ");
                         diamondCounter++;
                         
                     }
                 }
+            }
+            if (diamondCounter < goals.Length)
+            {
+                throw new Exception("Impossible!");
             }
         }
 
@@ -230,6 +234,22 @@ namespace SokobanSolver
         public PointOnMap GetElementWest(PointOnMap current)
         {
             return new PointOnMap(current.Row, current.Column - 1, (FieldType)map[current.Row, current.Column - 1]);
+        }
+
+        public bool Equals(Map other)
+        {
+            for(int i = 0; i < map.GetLength(0); i++)
+            {
+                for(int j = 0; j < map.GetLength(1); j++)
+                {
+                    if(map[i,j] != other.map[i, j])
+                    {
+                        
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

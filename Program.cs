@@ -11,7 +11,7 @@ namespace SokobanSolver
         static void Main(string[] args)
         {
 
-            Input inputData = new Input("map4.txt");
+            Input inputData = new Input("map9.txt");
             Map map = inputData.GenerateMap();
             startGame(map);
 
@@ -26,18 +26,25 @@ namespace SokobanSolver
             //Breitensuche!
             //map.ToString();
             List<Map> maps = new List<Map>();
+            List<Map> alreadyVisitedMaps = new List<Map>();
             maps.Add(startMap);
             
             while(maps.Count > 0)
             {
                 Map map = maps.First();
+                alreadyVisitedMaps.Add(map);
                 Robot r = new Robot(map);
                 foreach (Route route in r.GetRoutes())
                 {
-                    Console.WriteLine("\n\n------------------\nBefore:\n"+ map.ToString()); 
-                    Console.WriteLine(route.ToString());
+                    //Console.WriteLine("\n\n------------------\nBefore:\n"+ map.ToString()); 
+                    //Console.WriteLine(route.ToString());
                     Map newMap = map.executeRoute(route);
-                    Console.WriteLine("\nAfter:\n\n" + newMap.ToString());
+                    if (alreadyVisitedMaps.Contains(newMap))
+                    {
+                        
+                        continue;
+                    }
+                    Console.WriteLine("\n" + newMap.ToString());
                     if (newMap.isWon())
                     {
                         //WON!
@@ -45,6 +52,7 @@ namespace SokobanSolver
                         throw new Exception("Won!");
                     }
                     maps.Add(newMap);
+                    
 
                 }
                 //Console.WriteLine(map.ToString());
