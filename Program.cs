@@ -11,7 +11,7 @@ namespace SokobanSolver
         static void Main(string[] args)
         {
 
-            Input inputData = new Input("map9.txt");
+            Input inputData = new Input("map2.txt");
             Map map = inputData.GenerateMap();
             startGame(map);
 
@@ -32,7 +32,13 @@ namespace SokobanSolver
             while(maps.Count > 0)
             {
                 Map map = maps.First();
+                maps.RemoveAt(0);
                 alreadyVisitedMaps.Add(map);
+                
+                // Check if Map is impossible to solve 
+                if (map.isImpossible()) continue;
+
+                
                 Robot r = new Robot(map);
                 foreach (Route route in r.GetRoutes())
                 {
@@ -44,7 +50,7 @@ namespace SokobanSolver
                         
                         continue;
                     }
-                    Console.WriteLine("\n" + newMap.ToString());
+                    //Console.WriteLine("\n" + newMap.ToString()); //!!!!!!!!!!!
                     if (newMap.isWon())
                     {
                         //WON!
@@ -57,7 +63,7 @@ namespace SokobanSolver
                 }
                 //Console.WriteLine(map.ToString());
                 
-                maps.RemoveAt(0);
+
             }
             // Each turn:
             // Robot on the new Position: Print Chosen Route

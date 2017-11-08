@@ -71,6 +71,22 @@ namespace SokobanSolver
             }
         }
 
+        public bool isImpossible()
+        {
+            // detect if a diamond is in an edge
+            foreach(PointOnMap diamond in diamonds)
+            {
+                if(this.GetElementNorth(diamond).FieldType == FieldType.Unwalkable && this.GetElementEast(diamond).FieldType == FieldType.Unwalkable ||
+                    this.GetElementEast(diamond).FieldType == FieldType.Unwalkable && this.GetElementSouth(diamond).FieldType == FieldType.Unwalkable ||
+                    this.GetElementSouth(diamond).FieldType == FieldType.Unwalkable && this.GetElementWest(diamond).FieldType == FieldType.Unwalkable ||
+                    this.GetElementWest(diamond).FieldType == FieldType.Unwalkable && this.GetElementNorth(diamond).FieldType == FieldType.Unwalkable
+                    )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public Map(int[,] inputMap, PointOnMap[] goals, PointOnMap[] diamonds, PointOnMap robotPosition, Route wholeRoute)
         {
